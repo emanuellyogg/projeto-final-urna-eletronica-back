@@ -16,7 +16,7 @@ const porta = 3001;
 app.listen(porta, function () { })
 
 app.post("/voto", verificaVoto, function(req,resp){
-    let voto = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n"
+    let voto:string = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n"
 
     fs.appendFile("votos.csv", voto, function(err){
         if (err) {
@@ -35,8 +35,8 @@ app.post("/voto", verificaVoto, function(req,resp){
 
 //Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
 function verificaVoto(req, resp, next){
-    let votoUnico = verificaRepetido(req.eleitor)
-    let votoNoPrazo = verificaPrazoVoto(req.timestamp)
+    let votoUnico:boolean = verificaRepetido(req.body.eleitor)
+    let votoNoPrazo:boolean = verificaPrazoVoto(req.body.timestamp)
     if(votoUnico && votoNoPrazo){
         next()
     }else{
