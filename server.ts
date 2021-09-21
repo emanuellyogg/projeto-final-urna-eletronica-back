@@ -35,9 +35,9 @@ app.post("/voto", verificaVoto, function(req,resp){
 
 //Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
 function verificaVoto(req, resp, next){
-    let votoUnico:boolean = verificaRepetido(req.body.eleitor)
-    let votoNoPrazo:boolean = verificaPrazoVoto(req.body.timestamp)
-    if(votoUnico && votoNoPrazo){
+    //let votoUnico:boolean = verificaRepetido(req.body.eleitor)
+    //let votoNoPrazo:boolean = verificaPrazoVoto(req.body.timestamp)
+    /*if(votoUnico && votoNoPrazo){
         next()
     }else{
         if(!votoUnico){
@@ -51,5 +51,5 @@ function verificaVoto(req, resp, next){
                 "mensagem": "Voto fora do período de votação"
             })            
         }
-    }
+    }*/
 }
