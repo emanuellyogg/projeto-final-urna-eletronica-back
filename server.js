@@ -50,6 +50,92 @@ app.listen(porta, function () { });
 var inicioVotacao;
 var finalVotacao;
 var ehAnonima;
+app.post("/voto", verificaVoto, function (req, resp) {
+    var voto = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n";
+    fs.appendFile("votos.csv", voto, function (err) {
+        if (err) {
+            resp.json({
+                "Status": "500",
+                "Mensagem": "Erro ao registrar voto, contate o administrador do sistema"
+            });
+        }
+        else {
+            resp.json({
+                "Status": "200",
+                "Mensagem": "Voto Registrado Com sucesso"
+            });
+        }
+    });
+});
+//Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
+function verificaVoto(req, resp, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var verificaVoto1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, verificaRepetido(req.body.eleitor)];
+                case 1:
+                    verificaVoto1 = _a.sent();
+                    console.log(verificaVoto1);
+                    //let verificaVoto2 = await verificaPrazoVoto(req.body.timestamp)
+                    if (verificaVoto1.validacao) { //&& verificaVoto2.validacao){
+                        if (verificaVoto1.naoRepete) { //&& verificaVoto2.validacao){
+                            next();
+                        }
+                        else {
+                            if (!verificaVoto1.naoRepete) {
+                                return [2 /*return*/, resp.json({
+                                        "status": "401",
+                                        "mensagem": "Você só pode votar uma vez"
+                                    })];
+                            }
+                            else {
+                                return [2 /*return*/, resp.json({
+                                        "status": "401",
+                                        "mensagem": "Voto fora do período de votação"
+                                    })];
+                            }
+                        }
+                    }
+                    else {
+                        return [2 /*return*/, resp.json({
+                                "status": "500",
+                                "mensagem": "Erro ao ler arquivo"
+                            })];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function verificaRepetido(eleitor) {
+    return __awaiter(this, void 0, void 0, function () {
+        var naoRepete, data, dados, i, voto, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    naoRepete = true;
+                    return [4 /*yield*/, fsPromises.readFile("votos.csv", "utf-8")];
+                case 1:
+                    data = _a.sent();
+                    dados = data.split("\n");
+                    for (i = 0; i < dados.length; i++) {
+                        voto = dados[i].split(";");
+                        if (voto[0] == eleitor) {
+                            naoRepete = false;
+                        }
+                    }
+                    return [2 /*return*/, { validacao: true, naoRepete: naoRepete }];
+                case 2:
+                    err_1 = _a.sent();
+                    console.log(err_1);
+                    return [2 /*return*/, { validacao: false }];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 app.get("/config", function (req, resp) {
     fs.readFile("configuracoes_gerais/config.csv", "utf-8", function (err, data) {
         return __awaiter(this, void 0, void 0, function () {
@@ -94,7 +180,7 @@ app.get("/config", function (req, resp) {
 //3
 function criaVetorCandidatos(arquivoConfig) {
     return __awaiter(this, void 0, void 0, function () {
-        var caminho, dados, dadosCandidatos, cand, i, candidatoLinha, candidatos, index, candidato, index, candidato, index, candidato, err_1;
+        var caminho, dados, dadosCandidatos, cand, i, candidatoLinha, candidatos, index, candidato, index, candidato, index, candidato, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -145,8 +231,8 @@ function criaVetorCandidatos(arquivoConfig) {
                     }
                     return [2 /*return*/, { validacao: true, candidatos: candidatos }];
                 case 3:
-                    err_1 = _a.sent();
-                    console.log(err_1);
+                    err_2 = _a.sent();
+                    console.log(err_2);
                     return [2 /*return*/, { validacao: false }];
                 case 4: return [2 /*return*/];
             }
