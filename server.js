@@ -39,6 +39,7 @@ exports.__esModule = true;
 var express = require("express");
 var fs = require("fs");
 var fsPromises = require("fs/promises");
+var path = require("path");
 var cors = require("cors");
 var app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -46,6 +47,9 @@ app.use(express.json());
 app.use(cors());
 var porta = 3001;
 app.listen(porta, function () { });
+var inicioVotacao;
+var finalVotacao;
+var ehAnonima;
 app.post("/voto", verificaVoto, function (req, resp) {
     var voto = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n";
     fs.appendFile("votos.csv", voto, function (err) {
@@ -128,6 +132,109 @@ function verificaRepetido(eleitor) {
                     console.log(err_1);
                     return [2 /*return*/, { validacao: false }];
                 case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+app.get("/config", function (req, resp) {
+    fs.readFile("configuracoes_gerais/config.csv", "utf-8", function (err, data) {
+        return __awaiter(this, void 0, void 0, function () {
+            var configuracoes, candidatosObj, resposta;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        configuracoes = data.split(";") //split = dividir
+                        ;
+                        console.log(configuracoes);
+                        configuracoes.splice(configuracoes.length - 1, 1); //splice=juntar
+                        //2 criaçao das variaveis globais
+                        inicioVotacao = configuracoes[1];
+                        finalVotacao = configuracoes[2];
+                        if (configuracoes[0] == "NA") {
+                            ehAnonima = false;
+                        }
+                        else {
+                            ehAnonima = true;
+                        }
+                        return [4 /*yield*/, criaVetorCandidatos(configuracoes[3])];
+                    case 1:
+                        candidatosObj = _a.sent();
+                        if (candidatosObj.validacao) {
+                            resposta = {
+                                ehAnonima: ehAnonima,
+                                inicioVotacao: inicioVotacao,
+                                finalVotacao: finalVotacao,
+                                candidatos: candidatosObj.candidatos
+                            };
+                            resp.json(resposta);
+                        }
+                        else if (candidatosObj.validacao == false || err) {
+                            resp.json({ "status": 500, "mensagem": "erro na leitura do arquivo" });
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    });
+});
+//3
+function criaVetorCandidatos(arquivoConfig) {
+    return __awaiter(this, void 0, void 0, function () {
+        var caminho, dados, dadosCandidatos, cand, i, candidatoLinha, candidatos, index, candidato, index, candidato, index, candidato, err_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    caminho = path.join("config_opcoes/", arquivoConfig);
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, fsPromises.readFile(caminho, "utf-8")];
+                case 2:
+                    dados = _a.sent();
+                    dadosCandidatos = dados.split("\r\n");
+                    cand = [];
+                    for (i = 0; i < dadosCandidatos.length; i++) {
+                        candidatoLinha = dadosCandidatos[i].split(";");
+                        candidatoLinha.splice(candidatoLinha.length - 1, 1);
+                        cand.push(candidatoLinha);
+                    }
+                    candidatos = [];
+                    if (cand[0].length == 2) {
+                        for (index = 0; index < cand.length; index++) {
+                            candidato = {
+                                numCand: cand[index][0],
+                                nomeCand: cand[index][1]
+                            };
+                            candidatos.push(candidato);
+                        }
+                    }
+                    else if (cand[0].length == 3) {
+                        for (index = 0; index < cand.length; index++) {
+                            candidato = {
+                                numCand: cand[index][0],
+                                nomeCand: cand[index][1],
+                                imgCand: cand[index][2]
+                            };
+                            candidatos.push(candidato);
+                        }
+                    }
+                    else if (cand[0].length == 4) {
+                        for (index = 0; index < cand.length; index++) {
+                            candidato = {
+                                numCand: cand[index][0],
+                                nomeCand: cand[index][1],
+                                imgCand: cand[index][2],
+                                descCand: cand[index][3]
+                            };
+                            candidatos.push(candidato);
+                        }
+                    }
+                    return [2 /*return*/, { validacao: true, candidatos: candidatos }];
+                case 3:
+                    err_2 = _a.sent();
+                    console.log(err_2);
+                    return [2 /*return*/, { validacao: false }];
+                case 4: return [2 /*return*/];
             }
         });
     });
