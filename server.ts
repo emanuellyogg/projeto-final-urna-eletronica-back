@@ -19,9 +19,13 @@ app.listen(porta, function () {
   console.log("Servidor rodando na porta " + porta);
 });
 
+//-------------------------VARIÁVEIS---------------------------------
+
 var inicioVotacao: string
 var finalVotacao: string
 var ehAnonima: boolean
+
+//------------------------------ROTAS--------------------------------
 
 // Rota que busca validar o usuário logado
 app.get("/validaUsuario", function (req, res) {
@@ -73,6 +77,49 @@ app.post("/voto", verificaVoto, function(req,resp){
     })
 })
 
+app.get("/config", function(req, resp) {
+
+  fs.readFile("configuracoes_gerais/config.csv", "utf-8", async function(err, data) {
+      
+      const configuracoes = data.split(";") //split = dividir
+      console.log(configuracoes);
+        
+      configuracoes.splice(configuracoes.length - 1, 1) //splice=juntar
+
+      //2 criaçao das variaveis globais
+      inicioVotacao = configuracoes[1]
+      finalVotacao = configuracoes[2]
+
+      if (configuracoes[0] == "NA") {
+          ehAnonima = false
+              
+      }else{
+          ehAnonima = true
+      }
+
+      var candidatosObj = await criaVetorCandidatos(configuracoes[3])
+      if (candidatosObj.validacao) {
+          const resposta = {
+              ehAnonima: ehAnonima,
+              inicioVotacao: inicioVotacao,
+              finalVotacao: finalVotacao,
+              candidatos: candidatosObj.candidatos
+          }
+          resp.json(resposta)
+
+      }else if(candidatosObj.validacao == false || err ){
+          resp.json({"status": 500, "mensagem": "erro na leitura do arquivo"})
+
+      }
+      
+      //resp.send(configuracoes)
+      //1 neste momento compilo para o js, abro o servidor npm server.js e abre o postman
+
+  })
+})
+
+//-----------------------------FUNÇÕES-------------------------------
+
 //Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
 async function verificaVoto(req, resp, next){
     let verificaVoto1 = await verificaRepetido(req.body.eleitor)
@@ -120,47 +167,6 @@ async function verificaRepetido(eleitor){
         return {validacao: false}
     }
 }
-
-app.get("/config", function(req, resp) {
-
-    fs.readFile("configuracoes_gerais/config.csv", "utf-8", async function(err, data) {
-        
-        const configuracoes = data.split(";") //split = dividir
-        console.log(configuracoes);
-          
-        configuracoes.splice(configuracoes.length - 1, 1) //splice=juntar
-
-        //2 criaçao das variaveis globais
-        inicioVotacao = configuracoes[1]
-        finalVotacao = configuracoes[2]
-
-        if (configuracoes[0] == "NA") {
-            ehAnonima = false
-                
-        }else{
-            ehAnonima = true
-        }
-
-        var candidatosObj = await criaVetorCandidatos(configuracoes[3])
-        if (candidatosObj.validacao) {
-            const resposta = {
-                ehAnonima: ehAnonima,
-                inicioVotacao: inicioVotacao,
-                finalVotacao: finalVotacao,
-                candidatos: candidatosObj.candidatos
-            }
-            resp.json(resposta)
-
-        }else if(candidatosObj.validacao == false || err ){
-            resp.json({"status": 500, "mensagem": "erro na leitura do arquivo"})
-
-        }
-        
-        //resp.send(configuracoes)
-        //1 neste momento compilo para o js, abro o servidor npm server.js e abre o postman
-
-    })
-})
 
 //3
 async function criaVetorCandidatos(arquivoConfig:string) {
