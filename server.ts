@@ -1,9 +1,9 @@
-import express from "express"
-import fs from "fs"
-import fsPromises from 'fs/promises'
-import jwt from "jsonwebtoken"
-import path from "path"
-import cors from "cors"
+import * as express from "express"
+import * as fs from "fs"
+import * as fsPromises from 'fs/promises'
+import * as jwt from "jsonwebtoken"
+import * as path from "path"
+import * as cors from "cors"
 
 const app = express()
 
@@ -14,3 +14,25 @@ app.use(cors());
 const porta = 3001;
 
 app.listen(porta, function () { })
+
+app.post("/voto", verificaVoto, function(req,resp){
+    let voto = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n"
+
+    fs.appendFile("votos.csv", voto, function(err){
+        if (err) {
+            resp.json({
+                "Status": "500",
+                "Mensagem": "Erro ao registrar voto, contate o administrador do sistema"
+            })
+        } else {
+            resp.json({
+                "Status": "200",
+                "Mensagem": "Voto Registrado Com sucesso"
+            })
+        }
+    })
+})
+
+//Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
+function verificaVoto(req, resp, next){
+}
