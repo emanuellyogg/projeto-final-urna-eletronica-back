@@ -96,6 +96,12 @@ app.get("/config", async function (req, resp) {
     resp.json(config)
 })
 
+
+app.get("/apuracao", async function (req, resp) {
+    let linhas = await apurarVotos();
+    resp.send(linhas);
+});
+
 //-----------------------------FUNÇÕES-------------------------------
 
 // Função que irá criptografar o CPF caso votação anônima
