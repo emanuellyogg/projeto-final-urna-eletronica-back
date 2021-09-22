@@ -17,6 +17,7 @@ app.use(cors());
 const porta = 3001;
 
 app.listen(porta, function () {
+    lerConfig()
     console.log("Servidor rodando na porta " + porta);
 });
 
@@ -25,6 +26,7 @@ app.listen(porta, function () {
 var inicioVotacao: string
 var finalVotacao: string
 var ehAnonima: boolean
+var candidatosDoConfig: object[]
 
 //------------------------------ROTAS--------------------------------
 
@@ -89,44 +91,9 @@ app.post("/voto", verificaVoto, function (req, resp) {
     })
 })
 
-app.get("/config", function (req, resp) {
-
-    fs.readFile("configuracoes_gerais/config.csv", "utf-8", async function (err, data) {
-
-        const configuracoes = data.split(";") //split = dividir
-        console.log(configuracoes);
-
-        configuracoes.splice(configuracoes.length - 1, 1) //splice=juntar
-
-        inicioVotacao = configuracoes[1]
-        finalVotacao = configuracoes[2]
-
-        if (configuracoes[0] === "NA") {
-            ehAnonima = false
-
-        } else {
-            ehAnonima = true
-        }
-
-        var candidatosObj = await criaVetorCandidatos(configuracoes[3])
-        if (candidatosObj.validacao) {
-            const resposta = {
-                ehAnonima: ehAnonima,
-                inicioVotacao: inicioVotacao,
-                finalVotacao: finalVotacao,
-                candidatos: candidatosObj.candidatos
-            }
-            resp.json(resposta)
-
-        } else if (candidatosObj.validacao == false || err) {
-            resp.json({ "status": 500, "mensagem": "erro na leitura do arquivo" })
-
-        }
-
-        //resp.send(configuracoes)
-        //1 neste momento compilo para o js, abro o servidor npm server.js e abre o postman
-
-    })
+app.get("/config", async function (req, resp) {
+    const config = await lerConfig()
+    resp.json(config)
 })
 
 //-----------------------------FUNÇÕES-------------------------------
@@ -141,11 +108,9 @@ function criptografarUser(userCPF) {
 //Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
 async function verificaVoto(req, resp, next) {
     let verificaVoto1 = await verificaRepetido(req.body.eleitor)
-    console.log(verificaVoto1);
-
-    //let verificaVoto2 = await verificaPrazoVoto(req.body.timestamp)
-    if (verificaVoto1.validacao) { //&& verificaVoto2.validacao){
-        if (verificaVoto1.naoRepete) {//&& verificaVoto2.validacao){
+    let verificaVoto2 = await verificaPrazoVoto(req.body.timestamp)
+    if (verificaVoto1.validacao) {
+        if (verificaVoto1.naoRepete && verificaVoto2) {
             next()
         } else {
             if (!verificaVoto1.naoRepete) {
@@ -168,7 +133,7 @@ async function verificaVoto(req, resp, next) {
     }
 }
 
-async function verificaRepetido(eleitor) {
+async function verificaRepetido(eleitor: string) {
     try {
         let naoRepete = true
         let data = await fsPromises.readFile("votos.csv", "utf-8")
@@ -236,6 +201,51 @@ async function criaVetorCandidatos(arquivoConfig: string) {
         return { validacao: false }
 
     }
+}
 
+async function verificaPrazoVoto(timestampVoto) {
+    const dataInicio = Number(Date.parse(inicioVotacao))
+    const dataFim = Number(Date.parse(finalVotacao))
+    const dataVoto = Number(Date.parse(timestampVoto))
 
+    if(dataVoto > dataInicio && dataVoto < dataFim){
+        return true
+    }else{
+        return false
+    }
+}
+
+async function lerConfig(){
+    try {
+        let data = await fsPromises.readFile("configuracoes_gerais/config.csv", "utf-8")
+        const configuracoes = data.split(";") 
+
+        configuracoes.splice(configuracoes.length - 1, 1)
+
+        inicioVotacao = configuracoes[1]
+        finalVotacao = configuracoes[2]
+
+        if (configuracoes[0] === "NA") {
+            ehAnonima = false
+
+        } else {
+            ehAnonima = true
+        }
+
+        var candidatosDoConfig = await criaVetorCandidatos(configuracoes[3])
+        if (candidatosDoConfig.validacao) {
+            const configObj = {
+                ehAnonima: ehAnonima,
+                inicioVotacao: inicioVotacao,
+                finalVotacao: finalVotacao,
+                candidatos: candidatosDoConfig.candidatos
+            }
+            return { "status": 200, "resp": configObj }
+
+        } else {
+            return { "status": 500, "mensagem": "erro na leitura do arquivo" }
+        }
+    } catch (err) {
+        return { "status": 500, "mensagem": "erro na leitura do arquivo" }
+    }
 }
