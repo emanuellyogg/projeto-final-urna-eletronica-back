@@ -301,7 +301,7 @@ async function apurarVotos() {
 
         // Contagem de votos
         var verificaVoto: boolean = true;
-        for (let i = 0; i < dadosVotacao.length; i++) {
+        for (let i = 0; i < dadosVotacao.length - 1; i++) {
             verificaVoto = false;
             for (let index = 0; index < linhas.length; index++) {
                 if (dadosVotacao[i][1] == linhas[index][0]) {
@@ -344,7 +344,7 @@ function ordenarLinhas(linhas) {
 };
 
 function calculoPorcentagem(dadosVotacao, linhas) {
-    var totalVotos: number = dadosVotacao.length;
+    var totalVotos: number = dadosVotacao.length - 1;
     var voto: number = 0;
     for (let i = 0; i < linhas.length; i++) {
         voto = linhas[i][2];
