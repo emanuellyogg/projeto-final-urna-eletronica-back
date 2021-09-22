@@ -342,3 +342,12 @@ function ordenarLinhas(linhas) {
         return 0
     });
 };
+
+function calculoPorcentagem(dadosVotacao, linhas) {
+    var totalVotos: number = dadosVotacao.length;
+    var voto: number = 0;
+    for (let i = 0; i < linhas.length; i++) {
+        voto = linhas[i][2];
+        linhas[i][3] = ((voto / totalVotos) * 100);
+    };
+};
