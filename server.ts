@@ -64,7 +64,7 @@ app.post("/validaUsuario", function (req, res) {
         res.json({id: user})
 
     } else {
-        res.json({id: false})
+        res.json({id: "invalido"})
     }
 });
 
