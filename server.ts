@@ -306,7 +306,7 @@ async function apurarVotos() {
             };
             // Contagem dos votos brancos e nulos
             if (verificaVoto == false) {
-                if (dadosVotacao[i][1].trim() == "") { // Votos Brancos
+                if (dadosVotacao[i][1] == "00") { // Votos Brancos
                     brancos[2] = brancos[2] + 1
                 } else { // Votos nulos 
                     nulos[2] = nulos[2] + 1
