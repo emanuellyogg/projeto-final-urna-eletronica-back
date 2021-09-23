@@ -164,7 +164,9 @@ async function criaVetorCandidatos(arquivoConfig: string) {
             for (let index = 0; index < cand.length; index++) {
                 let candidato = {
                     numCand: cand[index][0],
-                    nomeCand: cand[index][1]
+                    nomeCand: cand[index][1],
+                    imgCand: "",
+                    descCand: "",
                 }
                 candidatos.push(candidato)
             }
@@ -173,7 +175,8 @@ async function criaVetorCandidatos(arquivoConfig: string) {
                 let candidato = {
                     numCand: cand[index][0],
                     nomeCand: cand[index][1],
-                    imgCand: cand[index][2]
+                    imgCand: cand[index][2],
+                    descCand: ""
                 }
                 candidatos.push(candidato)
             }
