@@ -74,13 +74,13 @@ app.post("/voto", verificaVoto, function (req, resp) {
     fs.appendFile("votos.csv", voto, function (err) {
         if (err) {
             resp.json({
-                "Status": "500",
-                "Mensagem": "Erro ao registrar voto, contate o administrador do sistema"
+                "status": "500",
+                "mensagem": "Erro ao registrar voto, contate o administrador do sistema"
             })
         } else {
             resp.json({
-                "Status": "200",
-                "Mensagem": "Voto Registrado Com sucesso"
+                "status": "200",
+                "mensagem": "Voto Registrado Com sucesso"
             })
         }
     })
