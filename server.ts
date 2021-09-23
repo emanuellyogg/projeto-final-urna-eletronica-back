@@ -31,17 +31,14 @@ var candidatosDoConfig: object[]
 //------------------------------ROTAS--------------------------------
 
 // Rota que busca validar o usuário logado
-app.get("/validaUsuario", function (req, res) {
+app.post("/validaUsuario", function (req, res) {
     const data = readFileSync("./opcoes_usuarios/usuarios.csv", "utf-8");
     let listaUser = [];
-
-    listaUser.push(data.split(";"));
-
-    // número do CPF digitado
     let userCPF = req.body.nmUser;
-
-    // verificador de user valido ou inválido
     let isValid = false;
+    let user: any;
+
+    listaUser.push(data.split(";"));    
 
     for (let i = 0; i < listaUser[0].length - 1; i++) {
         const element = listaUser[0][i];
@@ -55,8 +52,6 @@ app.get("/validaUsuario", function (req, res) {
     // retorna a chave criptografada do usuário
     let userCript = criptografarUser(userCPF)
 
-    let user: string
-
     // verificação se o tipo de votação é Anônima ou Não-anônima
     if (ehAnonima) {
         user = userCript
@@ -66,10 +61,10 @@ app.get("/validaUsuario", function (req, res) {
 
     // retorno do user para o frontend
     if (isValid) {
-        res.send(user)
+        res.json({id: user})
 
     } else {
-        res.send(false)
+        res.json({id: false})
     }
 });
 
