@@ -1,7 +1,6 @@
 import * as express from "express";
 import * as fs from "fs";
 import * as fsPromises from "fs/promises";
-import * as jwt from "jsonwebtoken";
 import * as path from "path";
 import * as cors from "cors";
 import { readFileSync } from "fs";
@@ -26,7 +25,6 @@ app.listen(porta, function () {
 var inicioVotacao: string
 var finalVotacao: string
 var ehAnonima: boolean
-var candidatosDoConfig: object[]
 
 //------------------------------ROTAS--------------------------------
 
