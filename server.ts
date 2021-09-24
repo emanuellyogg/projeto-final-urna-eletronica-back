@@ -69,7 +69,7 @@ app.post("/validaUsuario", function (req, res) {
 });
 
 app.post("/voto", verificaVoto, function (req, resp) {
-    let voto: string = req.body.eleitor + ";" + req.body.valueVoto + ";" + req.body.nameVoto + ";" + req.body.timestamp + "\n"
+    let voto: string = req.body.cpf + ";" + req.body.value + ";" + req.body.name + ";" + req.body.timestamp + "\n"
 
     fs.appendFile("votos.csv", voto, function (err) {
         if (err) {
@@ -108,7 +108,7 @@ function criptografarUser(userCPF) {
 
 //Função que vai verificar se o voto é repetido ou não e se está dentro do período de votação
 async function verificaVoto(req, resp, next) {
-    let verificaVoto1 = await verificaRepetido(req.body.eleitor)
+    let verificaVoto1 = await verificaRepetido(req.body.cpf)
     let verificaVoto2 = await verificaPrazoVoto(req.body.timestamp)
     if (verificaVoto1.validacao) {
         if (verificaVoto1.naoRepete && verificaVoto2) {
