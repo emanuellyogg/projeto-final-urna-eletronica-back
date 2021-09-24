@@ -64,7 +64,7 @@ app.post("/validaUsuario", function (req, res) {
         res.json({id: user})
 
     } else {
-        res.json({id: false})
+        res.json({id: "invalido"})
     }
 });
 
@@ -90,6 +90,12 @@ app.get("/config", async function (req, resp) {
     const config = await lerConfig()
     resp.json(config)
 })
+
+
+app.get("/apuracao", async function (req, resp) {
+    let linhas = await apurarVotos();
+    resp.send(linhas);
+});
 
 //-----------------------------FUNÇÕES-------------------------------
 
@@ -164,7 +170,9 @@ async function criaVetorCandidatos(arquivoConfig: string) {
             for (let index = 0; index < cand.length; index++) {
                 let candidato = {
                     numCand: cand[index][0],
-                    nomeCand: cand[index][1]
+                    nomeCand: cand[index][1],
+                    imgCand: "",
+                    descCand: "",
                 }
                 candidatos.push(candidato)
             }
@@ -173,7 +181,8 @@ async function criaVetorCandidatos(arquivoConfig: string) {
                 let candidato = {
                     numCand: cand[index][0],
                     nomeCand: cand[index][1],
-                    imgCand: cand[index][2]
+                    imgCand: cand[index][2],
+                    descCand: ""
                 }
                 candidatos.push(candidato)
             }
@@ -244,3 +253,99 @@ async function lerConfig(){
         return { "status": 500, "mensagem": "erro na leitura do arquivo" }
     }
 }
+
+
+// Função para apurar os votos
+async function apurarVotos() {
+    let temp = await lerConfig();
+    let dadosCandidatos = temp.resp.candidatos;
+
+    const linhas = [];
+    var votos: number = 0;
+    var porcentagem: number = 0;
+
+    for (let i = 0; i < dadosCandidatos.length; i++) {
+        let linha = [];
+        linha.push(dadosCandidatos[i].numCand);
+        linha.push(dadosCandidatos[i].nomeCand);
+        linha.push(votos);
+        linha.push(porcentagem);
+        linhas.push(linha);
+    };
+
+    // Adicionando votos brancos ao array
+    var brancos = [];
+    brancos.push("Branco");
+    brancos.push("Voto em Branco");
+    brancos.push(votos);
+    brancos.push(porcentagem);
+    linhas.push(brancos);
+
+    // Adicionando votos nulos ao array
+    var nulos = [];
+    nulos.push("Nulo");
+    nulos.push("Voto Nulo");
+    nulos.push(votos);
+    nulos.push(porcentagem);
+    linhas.push(nulos);
+
+    try {
+        let data = await fsPromises.readFile("votos.csv", "utf-8");
+        var dadosVotacao = [];
+        let dados: string[] = data.split("\r\n");
+        dados.forEach(element => {
+            dadosVotacao.push(element.split(";"));
+        });
+
+        // Contagem de votos
+        var verificaVoto: boolean = true;
+        for (let i = 0; i < dadosVotacao.length - 1; i++) {
+            verificaVoto = false;
+            for (let index = 0; index < linhas.length; index++) {
+                if (dadosVotacao[i][1] == linhas[index][0]) {
+                    linhas[index][2] = linhas[index][2] + 1
+                    verificaVoto = true;
+                };
+            };
+            // Contagem dos votos brancos e nulos
+            if (verificaVoto == false) {
+                if (dadosVotacao[i][1] == "00") { // Votos Brancos
+                    brancos[2] = brancos[2] + 1
+                } else { // Votos nulos 
+                    nulos[2] = nulos[2] + 1
+                };
+            };
+        };
+
+        // Ordenação do array - decrescente
+        ordenarLinhas(linhas);
+
+        // Cálculo da porcentagem
+        calculoPorcentagem(dadosVotacao, linhas);
+
+        return linhas;
+    } catch (error) {
+        console.log("Erro ao ler arquivo: " + error);
+    };
+};
+
+function ordenarLinhas(linhas) {
+    linhas.sort(function (a, b) {
+        if (a[2] > b[2]) {
+            return -1
+        };
+        if (a[2] < b[2]) {
+            return 1
+        };
+        return 0
+    });
+};
+
+function calculoPorcentagem(dadosVotacao, linhas) {
+    var totalVotos: number = dadosVotacao.length - 1;
+    var voto: number = 0;
+    for (let i = 0; i < linhas.length; i++) {
+        voto = linhas[i][2];
+        linhas[i][3] = ((voto / totalVotos) * 100);
+    };
+};
