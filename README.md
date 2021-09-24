@@ -2,7 +2,9 @@ Urna Eletrônica
 =======
 
 
-![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)  ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)  ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) 
+
+![Sonar](./measure.svg)
 
 ---
 
@@ -19,8 +21,7 @@ Sumário
 - Board do projeto
 - Pré requisitos
 - Instalando
-  - Executar local
-  - Acessar a aplicação
+  - Executando o servidor local
 - Dependências do projeto
 
 ---
@@ -41,14 +42,23 @@ Instalar o Node.js. Para mais informações de como instalar [clique aqui](https
 
 Utilizando nesse formato, as alterações serão executadas automaticamente e refletidas na aplicação.
 
-Para fazer e intalação basta clonar o projeto e dentro da pasta executar o comando:
+Para fazer a intalação basta clonar o projeto, executando o comando:
+
+```sh
+git clone https://larisgou@bitbucket.org/emanuellyogg/urna-eletronica-backend.git
+```
+
+E, dentro da pasta executar o comando:
 ```sh
 npm install
 ```
-O projeto pode ser executado da seguinte forma:
+
 
 Executando o servidor local
 --------------
+
+Na pasta raiz do projeto, executar o comando:
+
 ```sh
 npm run start
 ```
