@@ -290,7 +290,7 @@ async function apurarVotos() {
     try {
         let data = await fsPromises.readFile("votos.csv", "utf-8");
         var dadosVotacao = [];
-        let dados: string[] = data.split("\r\n");
+        let dados: string[] = data.split("\n");
         dados.forEach(element => {
             dadosVotacao.push(element.split(";"));
         })
